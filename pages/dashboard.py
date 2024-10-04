@@ -2,58 +2,64 @@ import sqlite3
 import streamlit as st
 
 # SQLiteデータベースの接続
-conn = sqlite3.connect('omiyapay.db')
-cursor = conn.cursor()
+def connect_db():
+    return sqlite3.connect('omiyapay.db')
 
 # 残高取得関数
 def get_balance(username):
+    conn = connect_db()
+    cursor = conn.cursor()
     cursor.execute("SELECT balance FROM users WHERE username=?", (username,))
-    return cursor.fetchone()[0]
-
-# ユーザー存在確認関数
-def user_exists(username):
-    cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-    return cursor.fetchone() is not None
+    balance = cursor.fetchone()
+    conn.close()
+    return balance[0] if balance else None
 
 # 資金送信関数
 def send_funds(sender, receiver, amount):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # 残高取得
     cursor.execute("SELECT balance FROM users WHERE username=?", (sender,))
-    sender_balance = cursor.fetchone()[0]
-
-    if not user_exists(receiver):
-        return False, "送信先ユーザーが存在しません。"
-
-    if sender_balance < amount:
-        return False, "残高不足です。"
-
-    # 送金処理
-    cursor.execute("UPDATE users SET balance = balance - ? WHERE username=?", (amount, sender))
-    cursor.execute("UPDATE users SET balance = balance + ? WHERE username=?", (amount, receiver))
-    cursor.execute("INSERT INTO transactions (sender, receiver, amount) VALUES (?, ?, ?)", (sender, receiver, amount))
-    conn.commit()
-    return True, "送信成功！"
+    sender_balance = cursor.fetchone()
+    
+    if sender_balance and sender_balance[0] >= amount:
+        # 残高が足りている場合
+        cursor.execute("UPDATE users SET balance = balance - ? WHERE username=?", (amount, sender))
+        cursor.execute("UPDATE users SET balance = balance + ? WHERE username=?", (amount, receiver))
+        conn.commit()
+        conn.close()
+        return True, "送金成功！"
+    else:
+        conn.close()
+        return False, "残高が足りません。"
 
 # Streamlit UI
 st.title("ダッシュボード")
 
-# セッションステートを使用してユーザー情報を保持
+# ユーザー名がセッションステートに存在するか確認
 if 'username' in st.session_state:
     username = st.session_state.username
-    st.success(f"ようこそ、{username}さん！")
-    balance = get_balance(username)
-    st.write(f"現在の残高: {balance} 仮想通貨")
-
-    # 資金送信機能
-    receiver = st.text_input("送信先ユーザー名", key="receiver_username")
-    amount = st.number_input("送信金額", min_value=0.0, step=0.1, key="send_amount")
-    if st.button("送信"):
-        success, message = send_funds(username, receiver, amount)
-        if success:
-            st.success(message)
-        else:
-            st.error(message)
 else:
-    st.error("ログインしていません。ログインページに移動してください。")
+    st.error("ログインしてください。")
+    st.stop()  # ログインしていない場合、以降の処理を停止
 
-# データベース接続を閉じる
-conn.close()
+# 残高表示
+balance = get_balance(username)
+st.write(f"残高: {balance} Coin")
+
+# 資金送信フォーム
+with st.form("send_funds"):
+    receiver = st.text_input("受取人のユーザー名", key="receiver")
+    amount = st.number_input("送金額", min_value=0.0, step=1.0)
+    send_button = st.form_submit_button("送金")
+
+    if send_button:
+        if receiver and amount > 0:
+            success, message = send_funds(username, receiver, amount)
+            if success:
+                st.success(message)
+            else:
+                st.error(message)
+        else:
+            st.error("受取人と送金額を正しく入力してください。")
