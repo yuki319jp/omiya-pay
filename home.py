@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Streamlitのタイトル
-st.set_page_config(page_title="<#375640>OmiyaPay", layout="wide")
+st.set_page_config(page_title="OmiyaPay", layout="wide")
 
 # ページのナビゲーション
 page = st.sidebar.selectbox("ページ選択", ["ホーム", "新規登録", "ログイン", "ダッシュボード","コンソール"])
