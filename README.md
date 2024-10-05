@@ -1,6 +1,9 @@
 # omiya-pay
 Omiya Pay is an open source fictitious currency payment service
 
+# Demo Page
+https:omiya-pay.yukiworlds.net
+
 
 # Omiya Pay uses these
 
