@@ -13,6 +13,8 @@ Streamlit, version 1.39.0
 
 SQLite
 
+GitHub Copilot
+
 # Hosting Provider
 
 yukiworlds.net (Official)
