@@ -14,7 +14,7 @@ def hash_password(password):
 
 # 管理者のユーザー名とパスワード（実際のアプリでは安全に管理すること）
 admin_username = "admin"
-admin_password_hash = hash_password("69m?]g&?GE/>80c[{Ea'$wf")  # ハッシュ化したパスワード
+admin_password_hash = hash_password("example")  # ハッシュ化したパスワード
 
 # 残高送金関数
 def distribute_currency(amount):
