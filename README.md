@@ -20,3 +20,7 @@ GitHub Copilot
 yukiworlds.net (Official)
 
 ### Made by yuki319jp
+
+> [!WARNING]
+> I am currently developing a new Flask-based Omiya Pay
+ReleaseOnce this version is released, support for the current Streamlit version will cease.
